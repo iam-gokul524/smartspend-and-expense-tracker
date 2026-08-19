@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-    /* Core Color Palette */
     --bg-main: #0B0E14;
     --bg-card: rgba(22, 27, 34, 0.85);
     --bg-card-hover: rgba(30, 38, 48, 0.95);
@@ -10,7 +9,6 @@
     --text-main: #F0F6FC;
     --text-muted: #8B949E;
 
-    /* Brand Accents */
     --accent-blue: #2F81F7;
     --accent-green: #2EA043;
     --accent-red: #F85149;
@@ -47,6 +45,96 @@ body {
     margin: 0 auto;
 }
 
+/* ================= 4-DIGIT PIN LOCK OVERLAY ================= */
+.pin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 14, 20, 0.98);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: var(--transition);
+}
+
+.pin-container {
+    background: #161B22;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.75rem;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+.pin-logo {
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+}
+
+.pin-container h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.25rem;
+}
+
+.pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 1.5rem 0;
+}
+
+.pin-dots .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-blue);
+    background: transparent;
+    transition: var(--transition);
+}
+
+.pin-dots .dot.filled {
+    background: var(--accent-blue);
+    box-shadow: 0 0 10px var(--accent-glow-blue);
+    transform: scale(1.1);
+}
+
+.pin-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 1.25rem;
+}
+
+.key-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.key-btn:active {
+    background: rgba(47, 129, 247, 0.3);
+    transform: scale(0.92);
+}
+
+.pin-hint {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
 /* ================= TOP NAVIGATION ================= */
 .top-nav {
     display: flex;
@@ -80,8 +168,70 @@ body {
 
 .nav-actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
+}
+
+/* ================= SMART TOOLS BAR ================= */
+.smart-tools-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.tool-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0.85rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.voice-btn {
+    background: rgba(47, 129, 247, 0.1);
+    color: var(--accent-blue);
+    border-color: rgba(47, 129, 247, 0.3);
+}
+
+.voice-btn:hover {
+    background: rgba(47, 129, 247, 0.2);
+}
+
+.voice-recording {
+    background: rgba(248, 81, 73, 0.2) !important;
+    color: var(--accent-red) !important;
+    border-color: var(--accent-red) !important;
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.sms-btn {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+}
+
+.sms-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 /* Buttons */
@@ -362,6 +512,7 @@ label {
 input[type="text"],
 input[type="number"],
 input[type="date"],
+textarea,
 select {
     width: 100%;
     padding: 0.65rem 0.85rem;
@@ -375,6 +526,7 @@ select {
 }
 
 input:focus,
+textarea:focus,
 select:focus {
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 2px var(--accent-glow-blue);
@@ -400,6 +552,45 @@ select option {
     justify-content: center;
 }
 
+/* ================= SPLIT WITH FRIENDS ================= */
+.split-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.split-card-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.split-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.split-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.split-amount {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent-blue);
+}
+
+.split-per-head {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
 /* ================= RECURRING BILLS ================= */
 .recurring-grid {
     display: grid;
@@ -415,11 +606,6 @@ select option {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    transition: var(--transition);
-}
-
-.recurring-card-item:hover {
-    background: rgba(255, 255, 255, 0.06);
 }
 
 .rec-header {
@@ -611,9 +797,13 @@ select option {
     color: var(--accent-orange);
 }
 
-/* ================= RESPONSIVE DESIGN ================= */
+/* ================= RESPONSIVE ================= */
 @media (max-width: 900px) {
     .interactive-row {
+        grid-template-columns: 1fr;
+    }
+
+    .smart-tools-bar {
         grid-template-columns: 1fr;
     }
 }
