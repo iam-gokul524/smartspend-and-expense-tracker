@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSpend - Personal Expense & Budget Hub</title>
+
+    <!-- PWA & Mobile Optimization -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0B0E14">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5501/5501375.png">
+
+    <!-- CDNs -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- Top Header Navigation -->
+        <header class="top-nav">
+            <div class="logo">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Smart<strong>Spend</strong></span>
+            </div>
+            <div class="nav-actions">
+                <button id="pwa-install-btn" class="btn btn-primary" style="display: none;">
+                    <i class="fa-solid fa-mobile-screen"></i> Install App
+                </button>
+                <button id="toggle-privacy-btn" class="icon-btn" title="Hide/Show Balance">
+                    <i class="fa-solid fa-eye" id="eye-icon"></i>
+                </button>
+                <button id="export-csv-btn" class="btn btn-secondary">
+                    <i class="fa-solid fa-file-arrow-down"></i> Export CSV
+                </button>
+            </div>
+        </header>
+
+        <!-- Due Bills Alert Banner -->
+        <div id="bills-alert-banner" class="alert-banner" style="display: none;">
+            <i class="fa-solid fa-bell text-orange"></i>
+            <span id="bills-alert-text">You have upcoming bills due soon!</span>
+            <button class="close-alert-btn"
+                onclick="document.getElementById('bills-alert-banner').style.display='none'">&times;</button>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-grid">
+
+            <!-- Top Metrics Row -->
+            <section class="metrics-row">
+
+                <div class="metric-card balance-card">
+                    <div class="metric-header">
+                        <span>Total Balance</span>
+                        <i class="fa-solid fa-vault text-blue"></i>
+                    </div>
+                    <h2 id="total-balance" class="amount">₹0.00</h2>
+                    <div class="savings-rate">
+                        <span>Savings Rate: <strong id="savings-rate-pct">0%</strong></span>
+                    </div>
+                </div>
+
+                <div class="metric-card income-card">
+                    <div class="metric-header">
+                        <span>Total Income</span>
+                        <i class="fa-solid fa-circle-arrow-down text-green"></i>
+                    </div>
+                    <h2 id="total-income" class="amount text-green">₹0.00</h2>
+                    <small>This Month</small>
+                </div>
+
+                <div class="metric-card expense-card">
+                    <div class="metric-header">
+                        <span>Total Expenses</span>
+                        <i class="fa-solid fa-circle-arrow-up text-red"></i>
+                    </div>
+                    <h2 id="total-expense" class="amount text-red">₹0.00</h2>
+                    <small>This Month</small>
+                </div>
+
+                <div class="metric-card budget-card">
+                    <div class="metric-header">
+                        <span>Monthly Budget</span>
+                        <i class="fa-solid fa-pen-to-square text-orange cursor-pointer" id="edit-budget-icon"
+                            title="Edit Budget Limit"></i>
+                    </div>
+                    <div class="budget-info">
+                        <span id="budget-spent-text">₹0 / ₹0</span>
+                        <span id="budget-pct" class="badge">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="budget-progress-bar" class="progress-bar-fill"></div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Middle Split: Entry Form & OCR + Analytics Chart -->
+            <section class="interactive-row">
+
+                <!-- Transaction Form with OCR Scanner -->
+                <div class="card form-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-plus-circle"></i> Add Transaction</h3>
+                        <!-- OCR Receipt Scan Button -->
+                        <label for="receipt-file-input" class="btn btn-secondary scan-btn"
+                            title="Scan Bill / Receipt Image">
+                            <i class="fa-solid fa-camera text-blue"></i> Scan Bill (OCR)
+                        </label>
+                        <input type="file" id="receipt-file-input" accept="image/*" style="display: none;">
+                    </div>
+
+                    <!-- OCR Processing Indicator -->
+                    <div id="ocr-loader" class="ocr-status-box" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin text-blue"></i>
+                        <span id="ocr-status-text">Scanning receipt text with AI...</span>
+                    </div>
+
+                    <form id="transaction-form">
+
+                        <div class="type-toggle">
+                            <input type="radio" id="type-expense" name="trx-type" value="expense" checked>
+                            <label for="type-expense" class="toggle-label expense-label">Expense</label>
+
+                            <input type="radio" id="type-income" name="trx-type" value="income">
+                            <label for="type-income" class="toggle-label income-label">Income</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="trx-desc">Description</label>
+                            <input type="text" id="trx-desc" placeholder="e.g., Grocery Shopping, Bike Service"
+                                required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="trx-amount">Amount (₹)</label>
+                                <input type="number" id="trx-amount" placeholder="0.00" min="1" step="any" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="trx-date">Date</label>
+                                <input type="date" id="trx-date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="trx-category">Category</label>
+                                <select id="trx-category" required>
+                                    <option value="Food & Dining">Food & Dining</option>
+                                    <option value="Rent & Housing">Rent & Housing</option>
+                                    <option value="Travel & Fuel">Travel & Fuel</option>
+                                    <option value="Bills & Utilities">Bills & Utilities</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Salary & Earnings">Salary & Earnings</option>
+                                    <option value="Investments">Investments</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="trx-payment">Payment Method</label>
+                                <select id="trx-payment" required>
+                                    <option value="UPI / GPay">UPI / GPay</option>
+                                    <option value="Debit Card">Debit Card</option>
+                                    <option value="Credit Card">Credit Card</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Net Banking">Net Banking</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary submit-btn">
+                            <i class="fa-solid fa-check"></i> Record Transaction
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Expense Chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-chart-pie"></i> Expense Breakdown</h3>
+                        <span class="badge badge-accent">Live Analytics</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Recurring Bills & EMI Reminders Section -->
+            <section class="card recurring-card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-calendar-check text-orange"></i> Recurring Bills & EMI Reminders</h3>
+                    <button id="add-recurring-modal-btn" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-plus"></i> Add Bill / EMI
+                    </button>
+                </div>
+                <div class="recurring-grid" id="recurring-bills-container">
+                    <!-- Dynamically loaded recurring bills -->
+                </div>
+            </section>
+
+            <!-- Bottom Split: Filters & Transaction History Table -->
+            <section class="card history-card">
+
+                <div class="history-header">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</h3>
+
+                    <div class="filters">
+                        <input type="text" id="search-input" placeholder="Search description...">
+                        <select id="filter-category">
+                            <option value="ALL">All Categories</option>
+                            <option value="Food & Dining">Food & Dining</option>
+                            <option value="Rent & Housing">Rent & Housing</option>
+                            <option value="Travel & Fuel">Travel & Fuel</option>
+                            <option value="Bills & Utilities">Bills & Utilities</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Salary & Earnings">Salary & Earnings</option>
+                            <option value="Investments">Investments</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Others">Others</option>
+                        </select>
+                        <select id="filter-type">
+                            <option value="ALL">All Types</option>
+                            <option value="income">Income Only</option>
+                            <option value="expense">Expense Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="transaction-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Mode</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-list">
+                            <!-- Populated via app.js -->
+                        </tbody>
+                    </table>
+                    <div id="no-data-msg" class="empty-state">
+                        <i class="fa-solid fa-receipt"></i>
+                        <p>No transactions recorded yet.</p>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Recurring Bill Modal -->
+    <div id="recurring-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add Recurring Bill / EMI</h3>
+                <span class="modal-close" onclick="closeRecurringModal()">&times;</span>
+            </div>
+            <form id="recurring-form">
+                <div class="form-group">
+                    <label>Bill Name</label>
+                    <input type="text" id="rec-title" placeholder="e.g., Room Rent, Wifi Bill, Bike EMI" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Amount (₹)</label>
+                        <input type="number" id="rec-amount" placeholder="0.00" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Due Day of Month (1 - 31)</label>
+                        <input type="number" id="rec-day" placeholder="5" min="1" max="31" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="rec-category" required>
+                        <option value="Rent & Housing">Rent & Housing</option>
+                        <option value="Bills & Utilities">Bills & Utilities</option>
+                        <option value="Investments">Investments / EMI</option>
+                        <option value="Entertainment">Subscriptions (OTT)</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary submit-btn">Save Recurring Bill</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CDNs: Chart.js & Tesseract OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
